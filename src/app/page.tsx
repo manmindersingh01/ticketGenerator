@@ -25,7 +25,7 @@ export default function Home() {
  
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [qrVisible, setQrIsVisible] = useState<boolean>(false);
-  const [imageSrc, setImageSrc] = useState<string>("");
+
   // qr image
   const [qr, setQr] = useState<string>("");
 
