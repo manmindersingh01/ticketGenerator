@@ -7,7 +7,7 @@ interface FormData {
   firstName: string;
   lastName: string;
   email: string;
-  rollNumber: number | undefined;
+  rollNumber: string;
   gender: string;
   image?: File | null;
 }
@@ -17,34 +17,32 @@ export default function Home() {
     firstName: "",
     lastName: "",
     email: "",
-    rollNumber: undefined,
+    rollNumber: "",
     gender: "",
     image: null,
   });
 
- 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [qrVisible, setQrIsVisible] = useState<boolean>(false);
-
-  // qr image
   const [qr, setQr] = useState<string>("");
 
-  // Form validation
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
     if (!formData.firstName) newErrors.firstName = "First name is required";
     if (!formData.lastName) newErrors.lastName = "Last name is required";
     if (!formData.email) newErrors.email = "Email is required";
 
-    if (!formData.rollNumber || formData.rollNumber > 24126060 || formData.rollNumber < 24126001)
-      newErrors.rollNumber = "Roll number must be between 24126001 and 24126060";
+    const rollNumber = Number(formData.rollNumber); // Convert to number for validation
+    if (formData.rollNumber === "" || rollNumber > 24126060 || rollNumber < 24126001) {
+        newErrors.rollNumber = "Roll number must be between 24126001 and 24126060";
+    }
 
     if (!formData.gender) newErrors.gender = "Gender is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+};
 
-  // Handle QR Code generation
+
   const handleQrCodeGenerator = (): void => {
     if (validateForm()) {
       QRCode.toDataURL(`https://preview-ebon.vercel.app/ticket/${formData.firstName}/${formData.email}/${formData.rollNumber}`).then((url) => {
@@ -56,23 +54,25 @@ export default function Home() {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
-    if (name === "image" && e.target instanceof HTMLInputElement && e.target.files) {
-      const file = e.target.files[0];
-      setFormData((prev) => ({ ...prev, image: file }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: name === "rollNumber" ? Number(value) : value,
-      }));
-    }
-  };
 
-  // Function to download QR Code
+    if (name === "image" && e.target instanceof HTMLInputElement && e.target.files) {
+        const file = e.target.files[0];
+        setFormData((prev) => ({ ...prev, image: file }));
+    } else {
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value, // Directly use value as it's now a string
+        }));
+    }
+};
+
+
+
   const downloadQrCode = () => {
     if (qr) {
       const link = document.createElement("a");
-      link.href = qr; // Use the QR code image data URL
-      link.download = "qr_code.png"; // Set the name for the downloaded file
+      link.href = qr;
+      link.download = "qr_code.png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
